@@ -1,0 +1,17 @@
+import { ZodDto } from '#libs/zod';
+import { z } from 'zod';
+
+/**
+ * {{PASCALCASE className}} Schema.
+ */
+const {{PASCALCASE className}}Schema = z.object({
+	prop: z.string().describe('my prop'),
+});
+
+/**
+ * {{PASCALCASE className}} Dto.
+ */
+export class {{PASCALCASE className}}Dto extends ZodDto(
+	{{PASCALCASE className}}Schema,
+	'{{PASCALCASE className}}',
+) {}

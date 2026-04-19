@@ -1,0 +1,11 @@
+import { HttpException, HttpStatus } from '@nestjs/common';
+
+/**
+ * {{PASCALCASE httpExceptionName}} HTTP exception.
+ */
+export class {{PASCALCASE httpExceptionName}}HttpException extends HttpException {
+	constructor() {
+    // add description
+		super('', HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+}

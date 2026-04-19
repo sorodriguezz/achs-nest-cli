@@ -1,0 +1,28 @@
+import { afterAll, beforeAll, describe, expect, test } from 'vitest';
+import { Test, type TestingModule } from '@nestjs/testing';
+import { {{PASCALCASE className}}Service } from './{{KEBABCASE className}}.service.ts';
+
+describe({{PASCALCASE className}}Service.name, () => {
+	let _module: TestingModule;
+	let _service: {{PASCALCASE className}}Service;
+
+	// hooks
+	beforeAll(async () => {
+		_module = await Test.createTestingModule({
+			providers: [{{PASCALCASE className}}Service],
+		}).compile();
+
+		_service = _module.get<{{PASCALCASE className}}Service>(
+			{{PASCALCASE className}}Service,
+		);
+	});
+
+	afterAll(async () => {
+		await _module.close();
+	});
+
+	// tests
+	test('1 + 1 should sum 2', () => {
+		expect(_service.sum(1, 1)).toBe(2);
+	});
+});

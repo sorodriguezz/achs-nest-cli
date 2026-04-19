@@ -1,0 +1,19 @@
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { HttpStatus } from '@nestjs/common';
+import type { DecoratorsLookUp } from '#common/decorators/apply.decorator.js';
+import { type {{PASCALCASE className}}Controller } from './{{KEBABCASE className}}.controller.ts';
+
+export const {{PASCALCASE className}}ControllerDocs: DecoratorsLookUp<{{PASCALCASE className}}Controller> =
+	{
+		class: [ApiTags('{{PASCALCASE className}}Controller')],
+		method: {
+			run: [
+				ApiOperation({ summary: 'A Description' }),
+				ApiResponse({
+					description: 'DTO',
+					status: HttpStatus.OK,
+					type: String,
+				}),
+			],
+		},
+	};

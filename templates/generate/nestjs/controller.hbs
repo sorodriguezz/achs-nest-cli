@@ -1,0 +1,30 @@
+import { Controller, Get, Logger } from '@nestjs/common';
+import { ApplyControllerDocs } from '#app/common/docs.decorator.ts';
+import { {{PASCALCASE className}}ControllerDocs } from './{{KEBABCASE className}}.controller.docs.ts';
+
+/**
+ * {{PASCALCASE className}} controller.
+ * NOTE: import it in your context module at 'controllers' array.
+ *
+ * @see https://docs.nestjs.com/controllers
+ */
+@Controller({
+	path: '{{route}}',
+	version: '1',
+})
+@ApplyControllerDocs({{PASCALCASE className}}ControllerDocs)
+export class {{PASCALCASE className}}Controller {
+	/**
+	 * Return sample result.
+	 *
+	 * @returns returns a sample
+	 */
+	@Get()
+	run(): string {
+		return 'Hello World';
+	}
+
+	constructor() {}
+
+	private readonly _logger = new Logger({{PASCALCASE className}}Controller.name);
+}

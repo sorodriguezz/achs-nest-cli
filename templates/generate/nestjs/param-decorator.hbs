@@ -1,0 +1,15 @@
+import { type FastifyRequest } from 'fastify';
+import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+
+/**
+ * {{PASCALCASE decoratorName}} decorator.
+ *
+ * @see https://docs.nestjs.com/custom-decorators
+ */
+export const {{PASCALCASE decoratorName}} = createParamDecorator(
+	(data: unknown, ctx: ExecutionContext) => {
+		const { params }: FastifyRequest = ctx.switchToHttp().getRequest();
+
+		return params;
+	},
+);
