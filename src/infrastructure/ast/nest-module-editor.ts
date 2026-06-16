@@ -1,7 +1,9 @@
 import path from "node:path";
 
 import {
+  IndentationText,
   Project,
+  QuoteKind,
   SyntaxKind,
   type ArrayLiteralExpression,
   type ObjectLiteralExpression,
@@ -51,14 +53,24 @@ export class NestModuleEditor {
       path.resolve(process.cwd(), args.symbolFilePath)
     );
 
-    this.ensureNamedImport(sf, args.symbolName, importSpecifier);
-    const arr = this.ensureArrayProperty(moduleObj, args.property);
-    this.ensureSymbolInArray(arr, args.symbolName);
+    const importAdded = this.ensureNamedImport(
+      sf,
+      args.symbolName,
+      importSpecifier
+    );
+    const { arr, created } = this.ensureArrayProperty(moduleObj, args.property);
+    const symbolAdded = this.ensureSymbolInArray(arr, args.symbolName);
+    const changed = importAdded || created || symbolAdded;
 
     if (args.dryRun) {
       log.dryUpdate(args.modulePath);
       log.snippet("before", readFile(moduleAbs).slice(0, 600));
       log.snippet("after", sf.getFullText().slice(0, 600));
+      return;
+    }
+
+    if (!changed) {
+      log.skip(args.modulePath, `${args.symbolName} already registered`);
       return;
     }
 
@@ -72,6 +84,10 @@ export class NestModuleEditor {
       skipFileDependencyResolution: true,
       skipLoadingLibFiles: true,
       compilerOptions: { allowJs: true },
+      manipulationSettings: {
+        indentationText: IndentationText.TwoSpaces,
+        quoteKind: QuoteKind.Single,
+      },
     });
   }
 
@@ -120,14 +136,22 @@ export class NestModuleEditor {
   private ensureArrayProperty(
     moduleObj: ObjectLiteralExpression,
     prop: NestModuleProperty
-  ): ArrayLiteralExpression {
+  ): { arr: ArrayLiteralExpression; created: boolean } {
     const existing = moduleObj.getProperty(prop);
-    if (existing && existing.getKind() === SyntaxKind.PropertyAssignment) {
+    if (existing) {
+      if (existing.getKind() !== SyntaxKind.PropertyAssignment) {
+        throw new Error(
+          `@Module() property '${prop}' is not a standard property assignment; cannot edit it automatically.`
+        );
+      }
       const pa = existing.asKindOrThrow(SyntaxKind.PropertyAssignment);
       const init = pa.getInitializer();
-      if (init && init.getKind() === SyntaxKind.ArrayLiteralExpression) {
-        return init as ArrayLiteralExpression;
+      if (!init || init.getKind() !== SyntaxKind.ArrayLiteralExpression) {
+        throw new Error(
+          `@Module() property '${prop}' is not an array literal; cannot register the symbol automatically.`
+        );
       }
+      return { arr: init as ArrayLiteralExpression, created: false };
     }
 
     moduleObj.addPropertyAssignment({ name: prop, initializer: "[]" });
@@ -135,16 +159,17 @@ export class NestModuleEditor {
     const created = moduleObj
       .getPropertyOrThrow(prop)
       .asKindOrThrow(SyntaxKind.PropertyAssignment);
-    return created
+    const arr = created
       .getInitializerOrThrow()
       .asKindOrThrow(SyntaxKind.ArrayLiteralExpression);
+    return { arr, created: true };
   }
 
   private ensureNamedImport(
     sf: SourceFile,
     symbolName: string,
     importFrom: string
-  ): void {
+  ): boolean {
     const existing = sf
       .getImportDeclarations()
       .find((decl) => decl.getModuleSpecifierValue() === importFrom);
@@ -153,24 +178,28 @@ export class NestModuleEditor {
       const named = existing.getNamedImports().map((n) => n.getName());
       if (!named.includes(symbolName)) {
         existing.addNamedImport(symbolName);
+        return true;
       }
-      return;
+      return false;
     }
 
     sf.addImportDeclaration({
       moduleSpecifier: importFrom,
       namedImports: [symbolName],
     });
+    return true;
   }
 
   private ensureSymbolInArray(
     arr: ArrayLiteralExpression,
     symbolName: string
-  ): void {
+  ): boolean {
     const items = arr.getElements().map((el) => el.getText());
     if (!items.includes(symbolName)) {
       arr.addElement(symbolName);
+      return true;
     }
+    return false;
   }
 }
 

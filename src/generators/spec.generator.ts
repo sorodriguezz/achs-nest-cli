@@ -7,6 +7,6 @@ export async function genSpec(opts: GeneratorOptions): Promise<void> {
   await runSimpleGenerator(opts, {
     extension: ".spec.ts",
     template: "spec.hbs",
-    data: (specName) => ({ specName }),
+    data: (specName) => ({ className: specName, specName }),
   });
 }

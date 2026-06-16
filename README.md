@@ -1,41 +1,166 @@
 # achs-nest-cli
 
-Per-project scaffolding CLI for **NestJS**. Installed locally in each project (not globally), it generates the same artefacts as `@nestjs/cli` — service, controller, module, repository, dto, guards, interceptors, middlewares, decorators, filters, etc. — using a curated set of Handlebars templates and updating the target module via AST (ts-morph) so imports and arrays (`providers`, `controllers`, `imports`, `exports`) are always kept consistent.
+**English** · [Español](README.es.md)
+
+Per-project scaffolding CLI for **NestJS**. It generates the same artefacts as
+`@nestjs/cli` — service, controller, module, repository, dto, guards,
+interceptors, middlewares, decorators, filters, etc. — using a curated set of
+Handlebars templates and updating the target module via AST (`ts-morph`) so the
+imports and the `@Module()` arrays (`providers`, `controllers`, `imports`,
+`exports`) are always kept consistent.
 
 ## Installation
 
-Install it as a dev dependency of your NestJS project:
+You can install it **globally** (for a direct `anc` / `achs-nest` command, just
+like `nest`) or **per-project** as a dev dependency (for a version pinned in
+`package.json`). You can also do both.
+
+### Global install (direct command)
 
 ```bash
+npm i -g achs-nest-cli
+```
+
+This puts the binaries on your PATH, so you can run them directly from any
+project — no `npx` needed:
+
+```bash
+anc g service users
+achs-nest g co auth --path src/modules
+```
+
+This is exactly how `@nestjs/cli` exposes its `nest` command.
+
+### Per-project install (dev dependency)
+
+```bash
+# npm
 npm i -D achs-nest-cli
+
+# pnpm
+pnpm add -D achs-nest-cli
+
+# yarn
+yarn add -D achs-nest-cli
 ```
 
-This exposes two binaries inside the project:
+A local install pins the generator version for the whole team / CI, but the
+binary lives in `node_modules/.bin` (which is not on your PATH), so you invoke it
+via `npx`, an npm script, or `yarn`/`pnpm` (see below).
 
-- `achs-nest`
-- `anc` (short alias)
+> The published package ships a prebuilt `dist/` and the `templates/` folder, so
+> there is nothing to compile after install. If you install straight from a git
+> URL, the `prepare` script builds `dist/` automatically.
 
-Invoke them with `npx`, from an npm script, or directly via `./node_modules/.bin/achs-nest`.
+**Global vs. dev dependency:**
 
-## Usage
+| | Global (`-g`) | Dev dependency (`-D`) |
+| --- | --- | --- |
+| Command | bare `anc` / `achs-nest` anywhere | `npx`, npm script, or `yarn`/`pnpm` |
+| Version | single, machine-wide | pinned per project (great for teams/CI) |
+| On PATH? | yes | no (`node_modules/.bin`) |
+
+Many teams install both: global for the convenient command, local so that
+`npx`/scripts use the project-pinned version.
+
+## Using it in your project
+
+The CLI exposes two binaries: `achs-nest` and `anc` (short alias).
+
+**Global install:**
 
 ```bash
-npx achs-nest generate <schematic> <name> [options]
-# or
-npx anc g <schematic> <name> [options]
+anc g service users
 ```
 
-Example — create a service, its `.spec.ts` and register it automatically inside the closest module:
+**Per-project — with `npx`:**
 
 ```bash
 npx anc g service users
+npx achs-nest generate service users
 ```
 
-Example — create a controller with its docs file and spec file inside `src/modules/auth`:
+**Per-project — from an `npm` script** (add it to your `package.json`):
+
+```json
+{
+  "scripts": {
+    "g": "anc g"
+  }
+}
+```
 
 ```bash
-npx anc g co auth --path src/modules
+npm run g -- service users
 ```
+
+**Per-project — with yarn / pnpm** (they can run local binaries without `npx`):
+
+```bash
+yarn anc g service users
+pnpm anc g service users
+```
+
+**Per-project — direct binary path:**
+
+```bash
+./node_modules/.bin/anc g service users
+```
+
+### Quick examples
+
+Create a service, its `.spec.ts`, and register it automatically inside the
+closest module (adds `UsersService` to `providers` **and** the relative import):
+
+```bash
+anc g service users
+```
+
+Create a controller with its docs and spec files inside `src/modules/auth`:
+
+```bash
+anc g co auth --path src/modules
+```
+
+Preview everything without touching the disk:
+
+```bash
+anc g service users --dry-run
+```
+
+Skip the automatic module registration:
+
+```bash
+anc g service users --skip-import
+```
+
+Target a specific module explicitly (by feature name, file, or path):
+
+```bash
+anc g service users --module orders
+```
+
+## How automatic module registration works
+
+When you generate a `service`, `controller`, `repository`, `module` or
+`dymodule`, the CLI locates the right `*.module.ts` and updates it via AST:
+
+1. It resolves the **target module**:
+   - if `--module <name|file|path>` is given, that one wins;
+   - otherwise it walks up from the feature directory looking for a sibling
+     `<dir>.module.ts` (or any `*.module.ts`);
+   - as a last resort it falls back to `<basePath>/app.module.ts`.
+2. It ensures a **named import** for the generated symbol, using a correct
+   relative path.
+3. It ensures the symbol is present in the right `@Module()` array
+   (`providers` for services/repositories, `controllers` for controllers,
+   `imports` for modules).
+
+The edit is **idempotent** (re-running never duplicates an import or an array
+entry — it reports `SKIP` instead), preserves the file's indentation and quote
+style, and is fully simulated under `--dry-run`. If no suitable module is found,
+the file is still created and a warning is printed. Use `--skip-import` to opt
+out entirely.
 
 ### Common flags
 
@@ -49,6 +174,8 @@ npx anc g co auth --path src/modules
 | `--no-docs`            | Skip the `.docs.ts` (controllers only)              |
 | `-m, --module <name>`  | Target module file/feature name to update           |
 | `--skip-import`        | Do not register the symbol in any module            |
+
+Run `anc g <schematic> --help` to see the flags supported by each schematic.
 
 ### Available schematics
 
@@ -70,6 +197,14 @@ npx anc g co auth --path src/modules
 | middleware     | mi    | `*.middleware.ts`                        |
 | httpExc        | he    | `*.exception.ts`                         |
 | vitest         | vt    | `*.spec.ts` (standalone)                 |
+
+## Overriding templates
+
+The template renderer probes a few roots in order; the first one that exists
+wins. The first candidate is `<cwd>/templates`, so to customise a template just
+drop your own `templates/generate/nestjs/<name>.hbs` inside your project root and
+it will be picked up automatically. If none is found there, the templates
+shipped with the package are used.
 
 ## Architecture
 
@@ -101,11 +236,20 @@ src/
 └── templates/              # Handlebars templates
 ```
 
-The layers follow a clean-architecture flow: generators depend on infrastructure and shared utilities, the CLI layer depends on generators and the domain catalogue, and nothing in `core/` imports from `cli/` or `infrastructure/`.
+The layers follow a clean-architecture flow: generators depend on infrastructure
+and shared utilities, the CLI layer depends on generators and the domain
+catalogue, and nothing in `core/` imports from `cli/` or `infrastructure/`.
 
-## Overriding templates
+## Building from source
 
-The template renderer probes a few roots in order; the first one that exists wins. The first candidate is `<cwd>/templates`, so if you want to customise a template just drop your own `templates/generate/nestjs/<name>.hbs` inside your project and it will be picked up automatically.
+```bash
+npm install
+npm run build      # bundles src/ into dist/bin.js with esbuild
+npm run dev        # same, in watch mode
+```
+
+The `prepare` script runs `build` automatically on install (e.g. git installs),
+and `prepublishOnly` rebuilds before publishing to npm.
 
 ## License
 
