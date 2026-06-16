@@ -2,12 +2,12 @@ import { type FastifyRequest, type FastifyReply } from 'fastify';
 import { Injectable, type NestMiddleware, Logger } from '@nestjs/common';
 
 /**
- * User middleware.
+ * {{PASCALCASE middlewareName}} middleware.
  *
  * @see https://docs.nestjs.com/middleware
  */
 @Injectable()
-export class UserMiddleware implements NestMiddleware {
+export class {{PASCALCASE middlewareName}}Middleware implements NestMiddleware {
 	/**
 	 * Intercepts requests.
 	 *
@@ -20,5 +20,5 @@ export class UserMiddleware implements NestMiddleware {
 		next();
 	}
 
-	private readonly _logger = new Logger(UserMiddleware.name);
+	private readonly _logger = new Logger({{PASCALCASE middlewareName}}Middleware.name);
 }

@@ -7,6 +7,6 @@ export async function genMiddleware(opts: GeneratorOptions): Promise<void> {
   await runSimpleGenerator(opts, {
     extension: ".middleware.ts",
     template: "middleware.hbs",
-    data: (className) => ({ className }),
+    data: (middlewareName) => ({ middlewareName }),
   });
 }
