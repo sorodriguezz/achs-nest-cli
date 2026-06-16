@@ -243,13 +243,14 @@ catalogue, and nothing in `core/` imports from `cli/` or `infrastructure/`.
 ## Building from source
 
 ```bash
-npm install
-npm run build      # bundles src/ into dist/bin.js with esbuild
-npm run dev        # same, in watch mode
+pnpm install
+pnpm run build      # bundles src/ into dist/index.js with @vercel/ncc
+pnpm run dev        # same, in watch mode
 ```
 
-The `prepare` script runs `build` automatically on install (e.g. git installs),
-and `prepublishOnly` rebuilds before publishing to npm.
+This project uses **pnpm** as its package manager and **@vercel/ncc** as the
+bundler (no esbuild). The `prepare` script runs `build` automatically on install
+(e.g. git installs), and `prepublishOnly` rebuilds before publishing to npm.
 
 ## License
 

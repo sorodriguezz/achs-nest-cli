@@ -1,19 +1,20 @@
 {
   "name": "achs-nest-cli",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Per-project scaffolding CLI for NestJS (files & schematics generator)",
   "license": "MIT",
   "readme": "README.md",
   "private": false,
   "author": "sorodriguezz",
   "bin": {
-    "achs-nest": "dist/bin.js",
-    "anc": "dist/bin.js"
+    "achs-nest": "dist/index.js",
+    "anc": "dist/index.js"
   },
   "files": [
     "dist",
     "templates",
-    "README.md"
+    "README.md",
+    "README.es.md"
   ],
   "keywords": [
     "nestjs",
@@ -28,21 +29,20 @@
   "engines": {
     "node": ">=18"
   },
+  "packageManager": "pnpm@11.7.0",
   "scripts": {
-    "build": "node esbuild.config.mjs",
-    "dev": "node esbuild.config.mjs --watch",
-    "prepare": "npm run build",
-    "prepublishOnly": "npm run build"
-  },
-  "dependencies": {
-    "chalk": "5.6.2",
-    "commander": "14.0.2",
-    "handlebars": "4.7.8",
-    "ts-morph": "27.0.2"
+    "build": "ncc build src/bin.ts -o dist --minify",
+    "dev": "ncc build src/bin.ts -o dist --watch",
+    "prepare": "ncc build src/bin.ts -o dist --minify",
+    "prepublishOnly": "ncc build src/bin.ts -o dist --minify"
   },
   "devDependencies": {
-    "@types/node": "^25.6.0",
-    "esbuild": "0.27.2",
-    "typescript": "5.9.3"
+    "@types/node": "25.9.3",
+    "@vercel/ncc": "0.44.0",
+    "chalk": "5.6.2",
+    "commander": "15.0.0",
+    "handlebars": "4.7.9",
+    "ts-morph": "28.0.0",
+    "typescript": "6.0.3"
   }
 }

@@ -247,13 +247,15 @@ y del catálogo de dominio, y nada en `core/` importa de `cli/` o
 ## Compilar desde el código fuente
 
 ```bash
-npm install
-npm run build      # empaqueta src/ en dist/bin.js con esbuild
-npm run dev        # lo mismo, en modo watch
+pnpm install
+pnpm run build      # empaqueta src/ en dist/index.js con @vercel/ncc
+pnpm run dev        # lo mismo, en modo watch
 ```
 
-El script `prepare` ejecuta `build` automáticamente al instalar (p. ej. en
-instalaciones desde git), y `prepublishOnly` recompila antes de publicar en npm.
+Este proyecto usa **pnpm** como gestor de paquetes y **@vercel/ncc** como
+bundler (sin esbuild). El script `prepare` ejecuta `build` automáticamente al
+instalar (p. ej. instalaciones desde git), y `prepublishOnly` recompila antes de
+publicar en npm.
 
 ## Licencia
 
