@@ -1,6 +1,6 @@
 {
   "name": "achs-nest-cli",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Per-project scaffolding CLI for NestJS (files & schematics generator)",
   "license": "MIT",
   "readme": "README.md",
